@@ -1,4 +1,20 @@
 
+// Init patterns from local storage
+console.time('Back-end init');
+var regexes;
+function loadPatterns() {
+	xb.load(function(patterns) {
+		regexes = patterns.map(xb.strToRegex);
+
+		console.timeEnd('Back-end init');
+		console.log('patterns', regexes);
+	});
+}
+loadPatterns();
+
+
+
+// Set up request filter
 var filter = {
 	// Check all URLs dynamically.
 	urls: ["<all_urls>"],
@@ -6,20 +22,11 @@ var filter = {
 	types: ["sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"],
 };
 var extraInfoSpec = ['blocking'];
-
-var regexes = [
-	new RegExp('\\Wfacebook\\.com\\W', 'i'),
-	new RegExp('\\Wfacebook\\.net\\W', 'i'),
-	new RegExp('\\Wfbcdn\\.net\\W', 'i'),
-	new RegExp('\\Wplatform\\.twitter\\.com\\W', 'i'),
-	new RegExp('\\Wgoogletagservices\\.com\\W', 'i'),
-	new RegExp('\\Wgoogleadservices\\.com\\W', 'i'),
-	new RegExp('\\Wcdn\\.nlmani\\-kualaasan\\.savviihq\\.com\\/.+\\.js$', 'i'),
-];
-
 chrome.webRequest.onBeforeRequest.addListener(function(details) {
 
-	for (var i=0; i<regexes.length; i++) {
+	if ( !regexes ) return;
+
+	for (var i=0, L=regexes.length; i<L; i++) {
 		var regex = regexes[i];
 		if (regex.test(details.url)) {
 			console.log('BLOCKING', details.url);
@@ -31,3 +38,16 @@ chrome.webRequest.onBeforeRequest.addListener(function(details) {
 	}
 
 }, filter, extraInfoSpec);
+
+
+
+// Listen for config changes from options page
+chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
+	// Options page saved tokens
+	if ( msg && msg.RELOAD ) {
+		loadPatterns();
+		console.log('Incoming RELOAD event handled from options page');
+
+		sendResponse();
+	}
+});
