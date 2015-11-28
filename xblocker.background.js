@@ -31,6 +31,8 @@ chrome.webRequest.onBeforeRequest.addListener(function(details) {
 		if (regex.test(details.url)) {
 			console.log('BLOCKING', details.url);
 
+			chrome.pageAction.show(details.tabId);
+
 			return {
 				cancel: true
 			};

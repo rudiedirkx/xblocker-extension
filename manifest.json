@@ -13,6 +13,12 @@
 		"scripts": [ "xblocker.helpers.js", "xblocker.background.js" ]
 	},
 	"options_page": "options/options.html",
+	"page_action": {
+		"default_title": "Resources blocked on this tab",
+		"default_icon": {
+			"128": "images/128x128.png"
+		}
+	},
 
 	"icons": {
 		"128": "images/128x128.png"
