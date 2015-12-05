@@ -1,6 +1,6 @@
 xb = {
 	load: function(callback) {
-		chrome.storage.local.get('patterns', function(items) {
+		chrome.storage.sync.get('patterns', function(items) {
 			var patterns = items.patterns || [];
 			if ( patterns.length == 0 ) {
 				patterns = xb.defaults();
@@ -29,7 +29,7 @@ xb = {
 	},
 
 	save: function(patterns, callback) {
-		chrome.storage.local.set({patterns: patterns}, function() {
+		chrome.storage.sync.set({patterns: patterns}, function() {
 			callback();
 		});
 	},

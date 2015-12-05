@@ -26,9 +26,9 @@ code {
 	height: 400px;
 }
 
-.saved {
+.message.saved {
 	color: green;
 }
-form:not(.saved) .saved {
+form:not(.saved) .message.saved {
 	display: none;
 }
