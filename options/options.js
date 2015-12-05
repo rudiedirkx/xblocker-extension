@@ -9,10 +9,10 @@ function ready() {
 function init() {
 	var $patterns = document.querySelector('#patterns');
 	var $form = $patterns.form;
+	var savedTimer;
 
 	// Load
 	xb.load(function(patterns) {
-		console.log(patterns);
 		$patterns.value = patterns.join("\n");
 
 		ready();
@@ -29,11 +29,17 @@ function init() {
 			}
 			return patterns;
 		}, []);
-		console.log(patterns);
 
 		// Save & propagate
 		xb.save(patterns, function() {
 			xb.propagate();
+
+			// Notify user
+			$form.classList.add('saved');
+			clearTimeout(savedTimer);
+			savedTimer = setTimeout(function() {
+				$form.classList.remove('saved');
+			}, 1500);
 		});
 
 		// Put cleaned up patterns back into textarea

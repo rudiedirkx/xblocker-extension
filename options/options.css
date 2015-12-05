@@ -14,8 +14,21 @@ body.loading:before {
 	letter-spacing: .1em;
 	text-align: center;
 }
+code {
+	display: inline-block;
+	padding: 1px 3px;
+	background-color: #eee;
+	outline: solid 1px #e7e7e7;
+}
 
 #patterns {
 	width: 100%;
 	height: 400px;
+}
+
+.saved {
+	color: green;
+}
+form:not(.saved) .saved {
+	display: none;
 }
