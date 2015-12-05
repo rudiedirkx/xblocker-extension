@@ -14,7 +14,7 @@ console.time('Back-end init');
 var regexes;
 function loadPatterns() {
 	xb.load(function(patterns) {
-		regexes = patterns.map(xb.strToRegex);
+		regexes = patterns.reduce(xb.strToPattern, []);
 
 		console.timeEnd('Back-end init');
 		console.log('patterns', regexes);
@@ -41,12 +41,18 @@ chrome.webRequest.onBeforeRequest.addListener(function(details) {
 		return;
 	}
 
-	if ( !regexes ) return;
+	if ( !regexes ) return console.error('PATTERNS NOT LOADED!');
 
 	for (var i=0, L=regexes.length; i<L; i++) {
 		var regex = regexes[i];
-		if (regex.test(details.url)) {
+		if (regex.regex.test(details.url)) {
 
+			// Explicity allow?
+			if ( regex.allow ) {
+				return;
+			}
+
+			// Or implicitly block
 			console.log('BLOCKING', details.url);
 
 			if (details.tabId) {
