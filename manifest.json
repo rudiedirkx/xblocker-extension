@@ -1,7 +1,7 @@
 {
 	"name": "X blocker",
 	"description": "Blocks incoming things from the web.",
-	"version": "1.0",
+	"version": "1.1",
 
 	"permissions": [
 		"storage",
