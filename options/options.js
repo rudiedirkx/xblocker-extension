@@ -22,13 +22,13 @@ function init() {
 	$form.addEventListener('submit', function(e) {
 		e.preventDefault();
 
-		// Clean up
-		var patterns = $patterns.value.split(/[\r\n]+/).reduce(function(patterns, pattern) {
-			if ( pattern = pattern.trim() ) {
-				patterns.push(pattern);
-			}
-			return patterns;
-		}, []);
+		// Extract lines
+		var patterns = $patterns.value.trim().replace(/\r\n/g, "\n").replace(/\r/g, "\n"); // Enforce \n
+		patterns = patterns.replace(/\n{2,}/, "\n\n"); // Max 1 open line
+		patterns = patterns.split(/\n/); // Split to lines
+		patterns = patterns.map(function(pattern) { // Trim every line
+			return pattern.trim();
+		});
 
 		// Save & propagate
 		xb.save(patterns, function() {

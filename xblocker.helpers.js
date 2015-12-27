@@ -10,7 +10,7 @@ xb = {
 	},
 
 	strToPattern: function(list, str) {
-		if ( str.trim() ) {
+		if ( str.trim() && str[0] != '#' ) {
 			var pattern = {allow: false};
 
 			str.split(': ').forEach(function(component) {
