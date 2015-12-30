@@ -9,28 +9,31 @@
 
 <body class="loading">
 
-<ul>
-	<li>All patterns will be regex-evaluated, so be careful of dots and dashes.</li>
-	<li>The FULL URL will be evaluated, incl scheme, trailing slashes etc.</li>
-	<li>You can comment lines with a <code>#</code>.</li>
-	<li>The leading <code>/</code> and traling <code>/i</code> must NOT be included.</li>
-	<li>
-		There are some special modifiers.
-		You must START the line with these.
-		Order doesn't matter.
-		They all have the same format: <code>&lt;modifier&gt; + ": "</code> (incl space!)
-		<ul>
-			<li>
-				<code>allow:&nbsp;</code> explicitly allows a resource, even if would be blocked later<br />
-				&nbsp; &nbsp; Example: <code>allow: platform\.twitter\.com</code>
-			</li>
-		</ul>
-	</li>
-	<li>The pattern order is important: first match wins</li>
-	<li>Saving here will automatically update the list in the background, so changes are directly noticable</li>
-</ul>
-
 <form>
+	<details data-version="1">
+		<summary>INSTRUCTIONS</summary>
+		<ul>
+			<li>All patterns will be regex-evaluated, so be careful of dots and dashes.</li>
+			<li>The FULL URL will be evaluated, incl scheme, trailing slashes etc.</li>
+			<li>You can comment lines with a <code>#</code>.</li>
+			<li>The leading <code>/</code> and traling <code>/i</code> must NOT be included.</li>
+			<li>
+				There are some special modifiers.
+				You must START the line with these.
+				Order doesn't matter.
+				They all have the same format: <code>&lt;modifier&gt; + ": "</code> (incl space!)
+				<ul>
+					<li>
+						<code>allow:&nbsp;</code> explicitly allows a resource, even if would be blocked later<br />
+						&nbsp; &nbsp; Example: <code>allow: platform\.twitter\.com</code>
+					</li>
+				</ul>
+			</li>
+			<li>The pattern order is important: first match wins</li>
+			<li>Saving here will automatically update the list in the background, so changes are directly noticable</li>
+		</ul>
+	</details>
+
 	<p>
 		Patterns:<br />
 		<textarea id="patterns" autofocus></textarea>

@@ -9,7 +9,19 @@ function ready() {
 function init() {
 	var $patterns = document.querySelector('#patterns');
 	var $form = $patterns.form;
+	var $instructions = document.querySelector('details');
 	var savedTimer;
+
+	// Open INSTRUCTIONS
+	if (parseFloat($instructions.dataset.version) > parseFloat(localStorage.instructionsVersion || '0')) {
+		$instructions.open = true;
+	}
+	$instructions.addEventListener('toggle', function(e) {
+		// User closed it, so remember that
+		if (!this.open) {
+			localStorage.instructionsVersion = parseFloat($instructions.dataset.version);
+		}
+	});
 
 	// Load
 	xb.load(function(patterns) {
