@@ -43,15 +43,9 @@ chrome.webRequest.onBeforeRequest.addListener(function(details) {
 
 	if ( !regexes ) return console.error('PATTERNS NOT LOADED!');
 
-	for (var i=0, L=regexes.length; i<L; i++) {
-		var regex = regexes[i];
-		if (regex.regex.test(details.url)) {
-
-			// Explicity allow?
-			if ( regex.allow ) {
-				return;
-			}
-
+	var result = xb.testURL(regexes, details.url);
+	if ( result ) {
+		if ( !result.allow ) {
 			// Or implicitly block
 			console.log('BLOCKING', details.url);
 

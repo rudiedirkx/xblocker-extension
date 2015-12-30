@@ -9,9 +9,21 @@ xb = {
 		});
 	},
 
+	testURL: function(regexes, url) {
+		for (var i=0, L=regexes.length; i<L; i++) {
+			var regex = regexes[i];
+			if (regex.regex.test(url)) {
+				return regex;
+			}
+		}
+	},
+
 	strToPattern: function(list, str) {
-		if ( str.trim() && str[0] != '#' ) {
-			var pattern = {allow: false};
+		if ( str[0] != '#' ) {
+			var pattern = {
+				original: str,
+				allow: false,
+			};
 
 			str.split(': ').forEach(function(component) {
 				if ( component == 'allow' ) {

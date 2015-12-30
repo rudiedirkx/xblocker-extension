@@ -32,3 +32,13 @@ code {
 form:not(.saved) .message.saved {
 	display: none;
 }
+
+#form-test #msg-test-result {
+	opacity: 0.35;
+}
+#form-test.result #msg-test-result {
+	opacity: 1.0;
+}
+#form-test:not(.result) #msg-test-result {
+	transition: opacity 1000ms linear;
+}
