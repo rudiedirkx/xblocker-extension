@@ -19,7 +19,7 @@ xb = {
 	},
 
 	strToPattern: function(list, str) {
-		if ( str[0] != '#' ) {
+		if ( str.trim() && str[0] != '#' ) {
 			var pattern = {
 				original: str,
 				allow: false,
