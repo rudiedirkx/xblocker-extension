@@ -1,8 +1,8 @@
 
 // Ignore blocking per tab
-var ignoredTabs = {};
-function setPageActionIcon(tabId, ignored) {
-	var icon = ignored ? '128x128-disabled' : '128x128';
+var disabledOnTabs = {};
+function setPageActionIcon(tabId, disabled) {
+	var icon = disabled ? '128x128-disabled' : '128x128';
 	chrome.pageAction.setIcon({
 		tabId: tabId,
 		path: chrome.runtime.getURL('images/' + icon + '.png'),
@@ -35,7 +35,7 @@ var extraInfoSpec = ['blocking'];
 chrome.webRequest.onBeforeRequest.addListener(function(details) {
 
 	// Ignore this tab
-	if (ignoredTabs[details.tabId]) {
+	if (disabledOnTabs[details.tabId]) {
 		setPageActionIcon(details.tabId, true);
 		chrome.pageAction.show(details.tabId);
 		return;
@@ -78,10 +78,10 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 
 // Listen for page action click
 chrome.pageAction.onClicked.addListener(function(tab) {
-	ignoredTabs[tab.id] = !ignoredTabs[tab.id];
-	setPageActionIcon(tab.id, ignoredTabs[tab.id]);
+	disabledOnTabs[tab.id] = !disabledOnTabs[tab.id];
+	setPageActionIcon(tab.id, disabledOnTabs[tab.id]);
 
-	if (ignoredTabs[tab.id]) {
+	if (disabledOnTabs[tab.id]) {
 		chrome.tabs.reload(tab.id);
 		console.log('IGNORING TAB:', tab.id)
 	}
