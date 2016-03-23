@@ -2,7 +2,7 @@
 // Ignore blocking per tab
 var ignoredTabs = {};
 function setPageActionIcon(tabId, ignored) {
-	var icon = ignored ? '128x128-grayscale' : '128x128';
+	var icon = ignored ? '128x128-disabled' : '128x128';
 	chrome.pageAction.setIcon({
 		tabId: tabId,
 		path: chrome.runtime.getURL('images/' + icon + '.png'),

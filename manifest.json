@@ -1,5 +1,5 @@
 {
-	"name": "X blocker",
+	"name": "X-blocker",
 	"description": "Blocks incoming things from the web.",
 	"version": "1.5",
 
@@ -14,7 +14,7 @@
 	},
 	"options_page": "options/options.html",
 	"page_action": {
-		"default_title": "Resources blocked on this tab. Click to toggle & reload!",
+		"default_title": "X-blocker - Click to toggle & reload",
 		"default_icon": {
 			"128": "images/128x128.png"
 		}
