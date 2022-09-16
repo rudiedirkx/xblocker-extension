@@ -1,66 +1,129 @@
-xb = {
-	load: function(callback) {
-		chrome.storage.sync.get('patterns', function(items) {
-			var patterns = items.patterns || [];
-			if ( patterns.length == 0 ) {
-				patterns = xb.defaults();
-			}
-			callback(patterns);
+"use strict";
+
+const xb = {
+	async load(callback) {
+		const items = await chrome.storage.sync.get('patterns');
+		var patterns = items.patterns || [];
+		return patterns.length == 0 ? xb.defaults() : patterns;
+	},
+
+	async loadPatterns() {
+		const [patterns, disabledOnTabs] = await Promise.all([xb.load(), xb.getDisabledOnTabs()]);
+// console.log('patterns', patterns);
+// console.log('disabledOnTabs', disabledOnTabs);
+
+		const currentRules = await chrome.declarativeNetRequest.getSessionRules();
+// console.log('currentRules', currentRules);
+		const removeRuleIds = currentRules.map(rule => rule.id);
+		const addRules = xb.convertPatternsToRules(patterns, disabledOnTabs);
+// console.log('addRules', addRules);
+		await chrome.declarativeNetRequest.updateSessionRules({removeRuleIds, addRules});
+
+		return addRules;
+	},
+
+	async getDisabledOnTabs() {
+		const items = await chrome.storage.session.get('disabledOnTabs');
+		return items.disabledOnTabs || [];
+	},
+
+	setDisabledOnTabs(tabIds) {
+		return chrome.storage.session.set({disabledOnTabs: tabIds});
+	},
+
+	async testURL(url) {
+		const outcome = await chrome.declarativeNetRequest.testMatchOutcome({
+			type: 'sub_frame',
+			url,
 		});
+		if (outcome.matchedRules.length) {
+			const id = outcome.matchedRules[0].ruleId;
+			const [pattern, rule] = await Promise.all([xb.getPattern(id), xb.getRule(id)]);
+			return {
+				id,
+				line: id,
+				pattern,
+				action: rule.action.type,
+			};
+		}
+		return null;
 	},
 
-	testURL: function(regexes, url) {
-		for (var i=0, L=regexes.length; i<L; i++) {
-			var regex = regexes[i];
-			if (regex.regex.test(url)) {
-				return regex;
+	async getPattern(id) {
+		const patterns = await xb.load();
+		return patterns[id - 1];
+	},
+
+	async getRule(id) {
+		const rules = await chrome.declarativeNetRequest.getSessionRules();
+		return rules.find(rule => rule.id == id);
+	},
+
+	convertPatternsToRules(patterns, excludedTabIds) {
+		const rules = [];
+		for ( let i = 0; i < patterns.length; i++ ) {
+			const p = patterns[i];
+			if (p.trim().length && p[0] != '#') {
+				rules.push(xb.convertPatternToRule(p, i + 1, excludedTabIds));
 			}
 		}
+		return rules;
 	},
 
-	strToPattern: function(list, str) {
-		if ( str.trim() && str[0] != '#' ) {
-			var pattern = {
-				original: str,
-				allow: false,
-			};
+	convertPatternToRule(pattern, id, excludedTabIds) {
+		var type = 'block';
+		var filterType = 'urlFilter';
 
-			str.split(': ').forEach(function(component) {
-				if ( component == 'allow' ) {
-					pattern.allow = true;
-				}
-				else {
-					pattern.regex = new RegExp(component, 'i');
-				}
-			});
-
-			list.push(pattern);
+		if (pattern.indexOf('allow:') == 0) {
+			pattern = pattern.substr(6).trim();
+			type = 'allow';
 		}
 
-		return list;
+		if (pattern.indexOf('domain:') == 0) {
+			pattern = '||' + pattern.substr(7).trim();
+		}
+
+		if (pattern.includes('`')) {
+			filterType = 'regexFilter';
+			pattern = pattern.replace(/`/g, '\\b');
+		}
+
+		if (pattern.indexOf('regex:') == 0) {
+			pattern = pattern.substr(6).trim();
+			filterType = 'regexFilter';
+		}
+
+		return {
+			id,
+			priority: 1,
+			action: {
+				type,
+			},
+			condition: {
+				[filterType]: pattern,
+				excludedResourceTypes: ['main_frame'],
+				excludedTabIds
+			},
+		};
 	},
 
-	save: function(patterns, callback) {
+	save(patterns, callback) {
 		chrome.storage.sync.set({patterns: patterns}, function() {
 			callback();
 		});
 	},
 
-	propagate: function(callback) {
-		chrome.runtime.sendMessage({RELOAD: true}, function(response) {
-			callback && callback();
-		});
-
-	},
-
-	defaults: function() {
+	defaults() {
 		return [
-			'\\Wfacebook\\.com\\W',
-			'\\Wfacebook\\.net\\W',
-			'\\Wfbcdn\\.net\\W',
-			'\\Wplatform\\.twitter\\.com\\W',
-			'\\Wgoogletagservices\\.com\\W',
-			'\\Wgoogleadservices\\.com\\W',
+			'# allow: domain: example.com',
+			'# allow: regex: \\bfoo\\wbar\\b',
+			'',
+			'facebook.com',
+			'facebook.net',
+			'fbcdn.net',
+			'platform.twitter.com',
+			'googletagservices.com',
+			'googleadservices.com',
 		];
 	}
 };

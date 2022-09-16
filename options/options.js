@@ -13,7 +13,7 @@ function init() {
 	var $formTest = document.querySelector('#form-test');
 	var $inpTestUrl = document.querySelector('#inp-test-url');
 	var $msgTestResult = document.querySelector('#msg-test-result');
-	var savedTimer;
+	var savedTimer, testTimer;
 
 	// Open INSTRUCTIONS
 	if (parseFloat($instructions.dataset.version) > parseFloat(localStorage.instructionsVersion || '0')) {
@@ -27,27 +27,29 @@ function init() {
 	});
 
 	// Load
-	xb.load(function(patterns) {
+	xb.load().then(function(patterns) {
 		$patterns.value = patterns.join("\n");
 
 		ready();
 	});
 
 	// Save
-	$form.addEventListener('submit', function(e) {
-		e.preventDefault();
-
+	function savePatterns() {
 		// Extract lines
-		var patterns = $patterns.value.trim().replace(/\r\n/g, "\n").replace(/\r/g, "\n"); // Enforce \n
-		patterns = patterns.replace(/\n{2,}/, "\n\n"); // Max 1 open line
-		patterns = patterns.split(/\n/); // Split to lines
-		patterns = patterns.map(function(pattern) { // Trim every line
-			return pattern.trim();
-		});
+		var patterns = $patterns.value.trim();
+		if (patterns.length) {
+			patterns = patterns.replace(/\r\n/g, "\n").replace(/\r/g, "\n"); // Enforce \n
+			patterns = patterns.replace(/\n{2,}/, "\n\n"); // Max 1 open line
+			patterns = patterns.split(/\n/); // Split to lines
+			patterns = patterns.map(pattern => pattern.trim()); // Trim every line
+		}
+		else {
+			patterns = [];
+		}
 
 		// Save & propagate
 		xb.save(patterns, function() {
-			xb.propagate();
+			xb.loadPatterns().then(rules => console.log(rules));
 
 			// Notify user
 			$form.classList.add('saved');
@@ -59,32 +61,39 @@ function init() {
 
 		// Put cleaned up patterns back into textarea
 		$patterns.value = patterns.join("\n");
+	}
+	$form.addEventListener('submit', function(e) {
+		e.preventDefault();
+		savePatterns();
+	});
+	$form.addEventListener('keydown', function(e) {
+		if (e.ctrlKey && !e.shiftKey && !e.altKey && e.code === 'KeyS') {
+			e.preventDefault();
+			savePatterns();
+		}
 	});
 
 	// Test a URL
-	$formTest.addEventListener('submit', function(e) {
+	$formTest.addEventListener('submit', async function(e) {
 		e.preventDefault();
 
 		function notify(msg) {
 			$formTest.classList.add('result');
 			$msgTestResult.innerHTML = msg;
 
-			setTimeout(function() {
+			clearTimeout(testTimer);
+			testTimer = setTimeout(function() {
 				$formTest.classList.remove('result');
-			}, 1000);
+			}, 3000);
 		}
 
 		var url = $inpTestUrl.value;
-		xb.load(function(patterns) {
-			var regexes = patterns.reduce(xb.strToPattern, []);
-			var result = xb.testURL(regexes, url);
-			if ( result ) {
-				var state = result.allow ? 'ALLOW' : 'BLOCK';
-				notify('Match (' + state + ') for <code>' + result.original + '</code>');
-			}
-			else {
-				notify('No match: pass');
-			}
-		});
+		var result = await xb.testURL(url);
+		if ( result ) {
+			notify(`Match (${result.action.toUpperCase()}) for <code>${result.pattern}</code> on line ${result.line}`);
+		}
+		else {
+			notify('No match: pass');
+		}
 	});
 }

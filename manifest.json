@@ -5,15 +5,13 @@
 
 	"permissions": [
 		"storage",
-		"webRequest",
-		"webRequestBlocking",
-		"*://*/*"
+		"declarativeNetRequest"
 	],
 	"background": {
-		"scripts": [ "xblocker.helpers.js", "xblocker.background.js" ]
+		"service_worker": "xblocker.sw.js"
 	},
 	"options_page": "options/options.html",
-	"page_action": {
+	"action": {
 		"default_title": "X-blocker - Click to toggle & reload",
 		"default_icon": {
 			"128": "images/128x128.png"
@@ -23,5 +21,5 @@
 	"icons": {
 		"128": "images/128x128.png"
 	},
-	"manifest_version": 2
+	"manifest_version": 3
 }
