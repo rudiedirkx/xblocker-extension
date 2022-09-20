@@ -49,7 +49,7 @@ function init() {
 
 		// Save & propagate
 		xb.save(patterns, function() {
-			xb.loadPatterns().then(rules => console.log(rules));
+			xb.loadRules().then(rules => console.log(rules));
 
 			// Notify user
 			$form.classList.add('saved');

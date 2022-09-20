@@ -7,7 +7,7 @@ const xb = {
 		return patterns.length == 0 ? xb.defaults() : patterns;
 	},
 
-	async loadPatterns() {
+	async loadRules() {
 		const [patterns, disabledOnTabs] = await Promise.all([xb.load(), xb.getDisabledOnTabs()]);
 // console.log('patterns', patterns);
 // console.log('disabledOnTabs', disabledOnTabs);

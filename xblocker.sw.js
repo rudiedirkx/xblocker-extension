@@ -11,6 +11,15 @@ function setPageActionIcon(tabId, disabled) {
 	});
 }
 
+function init() {
+	xb.loadRules().then(rules => console.log('rules', rules));
+
+	// Enable feedback?
+	chrome.declarativeNetRequest.setExtensionActionOptions({
+		displayActionCountAsBadgeText: true,
+	});
+}
+
 // Persist action icon
 chrome.tabs.onUpdated.addListener(async function(tabId) {
 // console.log('tabs.onUpdated', tabId);
@@ -37,24 +46,23 @@ chrome.action.onClicked.addListener(async function(tab) {
 
 	if (disabled) {
 		console.log('IGNORING TAB:', tab.id, disabledOnTabs)
-		xb.loadPatterns();
+		xb.loadRules();
 		chrome.tabs.reload(tab.id);
 	}
 	else {
 		console.log('STOP IGNORING TAB:', tab.id, disabledOnTabs)
-		xb.loadPatterns();
+		xb.loadRules();
 	}
 });
 
-// console.log('sw top level');
+console.log('sw top level');
+
+chrome.runtime.onStartup.addListener(function() {
+	console.log('sw onStartup');
+	init();
+});
+
 chrome.runtime.onInstalled.addListener(function() {
-// console.log('sw onInstalled');
-
-	xb.loadPatterns();
-
-	// Enable feedback?
-	chrome.declarativeNetRequest.setExtensionActionOptions({
-		displayActionCountAsBadgeText: true,
-	});
-
+	console.log('sw onInstalled');
+	init();
 });
