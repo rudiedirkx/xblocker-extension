@@ -8,27 +8,13 @@ const xb = {
 	},
 
 	async loadRules() {
-		const [patterns, disabledOnTabs] = await Promise.all([xb.load(), xb.getDisabledOnTabs()]);
-// console.log('patterns', patterns);
-// console.log('disabledOnTabs', disabledOnTabs);
+		const [patterns, currentRules] = await Promise.all([xb.load(), chrome.declarativeNetRequest.getDynamicRules()]);
 
-		const currentRules = await chrome.declarativeNetRequest.getSessionRules();
-// console.log('currentRules', currentRules);
 		const removeRuleIds = currentRules.map(rule => rule.id);
-		const addRules = xb.convertPatternsToRules(patterns, disabledOnTabs);
-// console.log('addRules', addRules);
-		await chrome.declarativeNetRequest.updateSessionRules({removeRuleIds, addRules});
+		const addRules = xb.convertPatternsToRules(patterns);
+		await chrome.declarativeNetRequest.updateDynamicRules({removeRuleIds, addRules});
 
 		return addRules;
-	},
-
-	async getDisabledOnTabs() {
-		const items = await chrome.storage.session.get('disabledOnTabs');
-		return items.disabledOnTabs || [];
-	},
-
-	setDisabledOnTabs(tabIds) {
-		return chrome.storage.session.set({disabledOnTabs: tabIds});
 	},
 
 	async testURL(url) {
@@ -55,22 +41,22 @@ const xb = {
 	},
 
 	async getRule(id) {
-		const rules = await chrome.declarativeNetRequest.getSessionRules();
+		const rules = await chrome.declarativeNetRequest.getDynamicRules();
 		return rules.find(rule => rule.id == id);
 	},
 
-	convertPatternsToRules(patterns, excludedTabIds) {
+	convertPatternsToRules(patterns) {
 		const rules = [];
 		for ( let i = 0; i < patterns.length; i++ ) {
 			const p = patterns[i];
 			if (p.trim().length && p[0] != '#') {
-				rules.push(xb.convertPatternToRule(p, i + 1, excludedTabIds));
+				rules.push(xb.convertPatternToRule(p, i + 1));
 			}
 		}
 		return rules;
 	},
 
-	convertPatternToRule(pattern, id, excludedTabIds) {
+	convertPatternToRule(pattern, id) {
 		var type = 'block';
 		var filterType = 'urlFilter';
 
@@ -101,8 +87,7 @@ const xb = {
 			},
 			condition: {
 				[filterType]: pattern,
-				excludedResourceTypes: ['main_frame'],
-				excludedTabIds
+				excludedResourceTypes: ['main_frame']
 			},
 		};
 	},

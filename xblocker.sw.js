@@ -3,7 +3,6 @@
 importScripts('xblocker.helpers.js');
 
 function setPageActionIcon(tabId, disabled) {
-// console.log('setPageActionIcon', tabId);
 	var icon = disabled ? '128x128-disabled' : '128x128';
 	chrome.action.setIcon({
 		tabId: tabId,
@@ -22,45 +21,50 @@ function init() {
 
 // Persist action icon
 chrome.tabs.onUpdated.addListener(async function(tabId) {
-// console.log('tabs.onUpdated', tabId);
-	const disabledOnTabs = await xb.getDisabledOnTabs();
-	setPageActionIcon(tabId, disabledOnTabs.includes(tabId));
+	const currentRules = await chrome.declarativeNetRequest.getSessionRules();
+	const disabled = currentRules.find(rule => rule.id == tabId);
+	setPageActionIcon(tabId, disabled != null);
 });
 
 // Listen for page action click
 chrome.action.onClicked.addListener(async function(tab) {
-	const disabledOnTabs = await xb.getDisabledOnTabs();
+	const currentRules = await chrome.declarativeNetRequest.getSessionRules();
+	const disabled = currentRules.find(rule => rule.id == tab.id);
 
-	const i = disabledOnTabs.indexOf(tab.id);
-	if (i >= 0) {
-		disabledOnTabs.splice(i, 1);
-	}
-	else {
-		disabledOnTabs.push(tab.id);
-	}
+	// Wasn't disabled, so disable by adding rule
+	if (!disabled) {
+		const addRule = {
+			id: tab.id,
+			priority: 3,
+			action: {
+				type: 'allowAllRequests',
+			},
+			condition: {
+				resourceTypes: ["main_frame", "sub_frame"],
+				tabIds: [tab.id],
+			},
+		};
+		chrome.declarativeNetRequest.updateSessionRules({addRules: [addRule]});
 
-	const disabled = i == -1;
-	setPageActionIcon(tab.id, disabled);
-
-	xb.setDisabledOnTabs(disabledOnTabs);
-
-	if (disabled) {
-		console.log('IGNORING TAB:', tab.id, disabledOnTabs)
-		xb.loadRules();
+		console.log('IGNORING TAB:', tab.id)
+		setPageActionIcon(tab.id, true);
 		chrome.tabs.reload(tab.id);
 	}
+	// Was disabled, so enable by removing rule
 	else {
-		console.log('STOP IGNORING TAB:', tab.id, disabledOnTabs)
-		xb.loadRules();
+		chrome.declarativeNetRequest.updateSessionRules({removeRuleIds: [disabled.id]});
+
+		console.log('STOP IGNORING TAB:', tab.id)
+		setPageActionIcon(tab.id, false);
 	}
 });
 
 console.log('sw top level');
 
-chrome.runtime.onStartup.addListener(function() {
-	console.log('sw onStartup');
-	init();
-});
+// chrome.runtime.onStartup.addListener(function() {
+// 	console.log('sw onStartup');
+// 	init();
+// });
 
 chrome.runtime.onInstalled.addListener(function() {
 	console.log('sw onInstalled');
