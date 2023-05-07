@@ -47,9 +47,16 @@ function init() {
 			patterns = [];
 		}
 
+		if (xb.includesRedirects(patterns)) {
+			xb.askForRedirectPermission();
+		}
+
 		// Save & propagate
 		xb.save(patterns, function() {
-			xb.loadRules().then(rules => console.log('rules', rules));
+			xb.loadRules().then(
+				rules => console.log('rules', rules),
+				ex => alert(ex)
+			);
 
 			// Notify user
 			$form.classList.add('saved');

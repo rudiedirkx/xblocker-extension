@@ -7,6 +7,9 @@
 		"storage",
 		"declarativeNetRequest"
 	],
+	"optional_host_permissions": [
+		"https://*/*"
+	],
 	"background": {
 		"service_worker": "xblocker.sw.js"
 	},

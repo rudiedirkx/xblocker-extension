@@ -45,6 +45,25 @@ const xb = {
 		return rules.find(rule => rule.id == id);
 	},
 
+	includesRedirects(patterns) {
+		return patterns.find(P => P.indexOf('redirect:') == 0);
+	},
+
+	async askForRedirectPermission() {
+		const permission = {
+			origins: ['https://*/*'],
+		};
+		const oldGranted = await chrome.permissions.contains(permission);
+		if (oldGranted) return true;
+
+		const newGranted = await chrome.permissions.request(permission);
+		if (!newGranted) {
+			alert("Without this permission, redirects won't work.");
+		}
+
+		return newGranted;
+	},
+
 	convertPatternsToRules(patterns) {
 		const rules = [];
 		for ( let i = 0; i < patterns.length; i++ ) {
@@ -59,10 +78,20 @@ const xb = {
 	convertPatternToRule(pattern, id) {
 		var type = 'block';
 		var filterType = 'urlFilter';
+		var redirect = undefined;
 
 		if (pattern.indexOf('allow:') == 0) {
 			pattern = pattern.substr(6).trim();
 			type = 'allow';
+		}
+
+		if (pattern.indexOf('redirect:') == 0) {
+			pattern = pattern.substr(9).trim();
+			type = 'redirect';
+
+			const parts = pattern.split(' ');
+			pattern = parts[0];
+			redirect = {url: parts[1]};
 		}
 
 		if (pattern.indexOf('domain:') == 0) {
@@ -84,6 +113,7 @@ const xb = {
 			priority: 1,
 			action: {
 				type,
+				...(redirect && {redirect}),
 			},
 			condition: {
 				[filterType]: pattern,
