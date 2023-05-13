@@ -78,7 +78,14 @@ const xb = {
 	convertPatternToRule(pattern, id) {
 		var type = 'block';
 		var filterType = 'urlFilter';
-		var redirect = undefined;
+		var fromDomain = null;
+		var redirect = null;
+
+		const fromMatch = pattern.match(/^from:([a-z0-9_\-\.]+)\s/);
+		if (fromMatch) {
+			pattern = pattern.substr(fromMatch[0].length).trim();
+			fromDomain = fromMatch[1];
+		}
 
 		if (pattern.indexOf('allow:') == 0) {
 			pattern = pattern.substr(6).trim();
@@ -117,7 +124,8 @@ const xb = {
 			},
 			condition: {
 				[filterType]: pattern,
-				excludedResourceTypes: ['main_frame']
+				excludedResourceTypes: ['main_frame'],
+				...(fromDomain && {initiatorDomains: [fromDomain]}),
 			},
 		};
 	},

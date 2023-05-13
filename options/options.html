@@ -10,7 +10,7 @@
 <body class="loading">
 
 <form>
-	<details data-version="3">
+	<details data-version="4">
 		<summary>INSTRUCTIONS</summary>
 		<ul>
 			<li>The FULL URL will be evaluated, incl scheme, trailing slashes etc.</li>
@@ -20,6 +20,10 @@
 				You must START the line with these.
 				In this order.
 				<ul>
+					<li>
+						<code>from:&lt;domain&gt;</code> only triggers the rule if it comes from that domain<br />
+						&nbsp; &nbsp; Example: <code>from:twitter.com allow: widget.js</code>
+					</li>
 					<li>
 						<code>redirect:</code> redirects a resource to another <em>real</em> URL<br />
 						&nbsp; &nbsp; Example: <code>redirect: /somewidget.js https://mywebsite/betterwidget.js</code>
