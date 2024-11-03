@@ -51,7 +51,7 @@ const xb = {
 
 	async askForRedirectPermission() {
 		const permission = {
-			origins: ['https://*/*'],
+			origins: ['https://*/*', 'http://*/*'],
 		};
 		const oldGranted = await chrome.permissions.contains(permission);
 		if (oldGranted) return true;
